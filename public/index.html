@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Movie Manager</title>
+</head>
+<body>
+
+<h1>Movie Manager</h1>
+
+<h2>Add Movie</h2>
+
+<input id="name" placeholder="Movie Name"><br><br>
+<input id="genre" placeholder="Genre"><br><br>
+<input id="year" type="number" placeholder="Year"><br><br>
+<input id="rating" type="number" step="0.1" placeholder="IMDb Rating"><br><br>
+<input id="director" type="number" placeholder="Director ID"><br><br>
+
+<button onclick="addMovie()">Add Movie</button>
+
+<hr>
+
+<h2>All Movies</h2>
+<div id="movie-list"></div>
+
+<script>
+    function loadMovies() {
+        fetch("/movie")
+        .then(r => r.json())
+        .then(data => {
+            const div = document.getElementById("movie-list");
+            div.innerHTML = "";
+            data.forEach(m => {
+                div.innerHTML += `
+                    <h3>${m.Movie_Name} (${m.Year})</h3>
+                    <p>Genre: ${m.Genre}</p>
+                    <p>Rating: ${m.IMDb_Rating}</p>
+                    <p>Director: ${m.Director_Name}</p>
+                    <button onclick="deleteMovie(${m.Movie_ID})">Delete</button>
+                    <hr>
+                `;
+            })
+        })
+    }
+
+    function addMovie() {
+        const data = {
+            Movie_Name: document.getElementById("name").value,
+            Genre: document.getElementById("genre").value,
+            Year: parseInt(document.getElementById("year").value),
+            IMDb_Rating: parseFloat(document.getElementById("rating").value),
+            Director_ID: parseInt(document.getElementById("director").value)
+        };
+
+        fetch("/movie", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data)
+        })
+        .then(() => loadMovies());
+    }
+
+    function deleteMovie(id) {
+        fetch("/movie/" + id, { method: "DELETE" })
+        .then(() => loadMovies());
+    }
+
+    loadMovies();
+</script>
+
+</body>
+</html>
